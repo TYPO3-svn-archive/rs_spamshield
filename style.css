@@ -1,0 +1,22 @@
+.tx_spamshield_honey1 {
+	display:none !important;
+}
+/* problematisch bei älteren Browsern */
+.tx_spamshield_honey3 {
+	position: absolute  !important;
+	margin: 0 0 0 -9999px  !important;
+}
+
+/* problematisch */
+.tx_spamshield_honey2 {
+  	width: 0px !important;
+	height: 0px !important;
+	display: inline;
+	padding: 0;
+	margin: 0;
+	border: 0 !important;
+}
+/* auch problematisch */
+.tx_spamshield_honey4 {
+   	visibility:hidden !important;
+}

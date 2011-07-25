@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<T3locallang>
+    <meta type="array">
+        <type>database</type>
+        <description>Language labels for database tables/fields belonging to extension 'spamshield'</description>
+    </meta>
+
+    <data type="array">
+
+        <languageKey index="default" type="array">
+
+		    /*---------- pi1/class.tx_spamshield_pi1_wizicon.php ------*/
+			<label index="pi1_title">Spamshield FE Plugin</label>
+			<label index="pi1_plus_wiz_description">Spamshield FE Plugin</label>
+
+			/*--------- TCA.php -----------*/
+			<label index="tx_spamshield_log.spamreason">Spam reason</label>
+			<label index="tx_spamshield_log.requesturl">REQUEST_URL</label>
+			<label index="tx_spamshield_log.spamweight">Spam weight</label>
+			<label index="tx_spamshield_log.postvalues">POST values</label>
+			<label index="tx_spamshield_log.getvalues">GET values</label>
+			<label index="tx_spamshield_log.pageid">page ID</label>
+			<label index="tx_spamshield_log.ip">IP</label>
+			<label index="tx_spamshield_log.useragent">User Agent</label>
+			<label index="tx_spamshield_log.referer">Referer</label>
+
+        </languageKey>
+
+    </data>
+
+</T3locallang>

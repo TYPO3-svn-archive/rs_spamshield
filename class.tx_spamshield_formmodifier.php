@@ -28,9 +28,9 @@ require_once (PATH_tslib."class.tslib_content.php");
 
 class tx_spamshield_formmodifier extends tslib_pibase {
 
-	var $prefixId = "tx_spamshield_formmodifier";                // Same as class name
-	var $scriptRelPath = "class.tx_spamshield_formmodifier.php";        // Path to this script relative to the extension dir.
-	var $extKey = "spamshield";        // The extension key.
+	var $prefixId = "tx_spamshield_formmodifier";				// Same as class name
+	var $scriptRelPath = "class.tx_spamshield_formmodifier.php";		// Path to this script relative to the extension dir.
+	var $extKey = "spamshield";		// The extension key.
 
 	/**
 	 * Hook output after rendering the content.
@@ -40,12 +40,12 @@ class tx_spamshield_formmodifier extends tslib_pibase {
 	 * @param	object		$pObj: partent object
 	 * @return	void
 	 */
-    function intPages (&$params,&$that) {
+	function intPages (&$params,&$that) {
 		if (!$GLOBALS['TSFE']->isINTincScript()) {
 			return;
 		} 
 		$this->main ($params['pObj']->content, $GLOBALS['TSFE']->tmpl->setup['plugin.']['tx_spamshield.']);
-    }
+	}
 
 	/**
 	 * Hook output after rendering the content.
@@ -55,12 +55,12 @@ class tx_spamshield_formmodifier extends tslib_pibase {
 	 * @param	object		$pObj: partent object
 	 * @return	void
 	 */
-    function noIntPages (&$params,&$that) {
+	function noIntPages (&$params,&$that) {
 		if ($GLOBALS['TSFE']->isINTincScript()) {
 			return;
 		} 
 		$this->main ($params['pObj']->content, $GLOBALS['TSFE']->tmpl->setup['plugin.']['tx_spamshield.']);
-    }
+	}
 
 	/**
 	 * Main Function:
@@ -71,26 +71,26 @@ class tx_spamshield_formmodifier extends tslib_pibase {
 	 * @return	void
 	 */
 	function main (&$html, &$conf) {
-        if ($conf['add2forms'] && strstr($html,'<form')) {
+		if ($conf['add2forms'] && strstr($html,'<form')) {
 			$newForms = $orgForms = $this->getForms($html);
-            for ($i = 0; $i < sizeof($newForms); $i++) {
+			for ($i = 0; $i < sizeof($newForms); $i++) {
 				if (!$this->enableOff($newForms[$i],$conf['add2forms.']['off.'])) {
-	            	$this->add2forms($newForms[$i],$conf['add2forms.']);
-	            }
-            }
+					$this->add2forms($newForms[$i],$conf['add2forms.']);
+				}
+			}
 			$html = str_replace($orgForms,$newForms,$html);
-		}            
+		}			
 	}
 
 	/**
 	 * get all forms out of $this->html
 	 *
 	 * @param	nothing
-	 * @return  array       all forms in $this->body
+	 * @return  array	   all forms in $this->body
 	 */
 	function getForms (&$html) {
-    	$numberOfForms = preg_match_all ("/(?s)(<[ \n\r]*form[^>]*>.*?<[ \n\r]*\/form[^>]*>)/is", $html, $matches);
-    	return $matches[0];
+		$numberOfForms = preg_match_all ("/(?s)(<[ \n\r]*form[^>]*>.*?<[ \n\r]*\/form[^>]*>)/is", $html, $matches);
+		return $matches[0];
 	}
 	
 	/**
@@ -102,19 +102,19 @@ class tx_spamshield_formmodifier extends tslib_pibase {
 	 */
 	function add2forms (&$form,$conf) {
 		$newInputs = $inputs = $this->getInputs($form);
-	    if ($conf['position'] == "rnd") {
-        	foreach ($conf['fields.'] as $honeyPot) {
-	            $changePos = mt_rand(0,sizeof($newInputs)-1);
-    	        if (mt_rand(0,1) == 1) {
+		if ($conf['position'] == "rnd") {
+			foreach ($conf['fields.'] as $honeyPot) {
+				$changePos = mt_rand(0,sizeof($newInputs)-1);
+				if (mt_rand(0,1) == 1) {
 					$newInputs[$changePos] = $honeyPot.$newInputs[$changePos];
 				}
 				else {
-			    	$newInputs[$changePos] = $newInputs[$changePos].$honeyPot;
+					$newInputs[$changePos] = $newInputs[$changePos].$honeyPot;
 				}
 			}
 		}
 		elseif ($conf['position'] == 'end') {
-            $newInputs[sizeof($newInputs)-1] = $newInputs[sizeof($newInputs)-1].implode('',$conf['fields.']);
+			$newInputs[sizeof($newInputs)-1] = $newInputs[sizeof($newInputs)-1].implode('',$conf['fields.']);
 		}
 		elseif ($conf['position'] == 'start') {
 			$newInputs[0] = implode('',$conf['fields.']).$newInputs[0];
@@ -122,7 +122,7 @@ class tx_spamshield_formmodifier extends tslib_pibase {
 		elseif ($conf['position'] == 'start-end') {
 			$i = 0;
 			foreach ($conf['fields.'] as $honeypot) {
-			    if ($i%2) {
+				if ($i%2) {
 					$newInputs[0] = $honeypot.$newInputs[0];
 				}
 				else {
@@ -137,8 +137,8 @@ class tx_spamshield_formmodifier extends tslib_pibase {
 	/**
 	 * regex rules for disabeling for single forms
 	 *
-	 * @param	string     the html form
-	 * @param   array       config array with regex rules
+	 * @param	string	 the html form
+	 * @param   array	   config array with regex rules
 	 * @return  boolean
 	 */
 	function enableOff($form,$conf) {
@@ -147,8 +147,8 @@ class tx_spamshield_formmodifier extends tslib_pibase {
 				if(preg_match($pattern,$form)) {
 					return true;
 				}
-           	}
-        }
+			}
+		}
 		else {
 			return false;
 		}
@@ -159,15 +159,15 @@ class tx_spamshield_formmodifier extends tslib_pibase {
 	 * help function for honeypots
 	 *
 	 * @param	string		html code of the form.
-	 * @return	array       all input fields in the form
+	 * @return	array	   all input fields in the form
 	 */
 	function getInputs($form) {
-	    $numberOfInputs = preg_match_all ("/(?s)(<[ \n\r]*input.*?[ \n\r]*[^>]*>)/is", $form, $matches);
-        return $matches[0];
+		$numberOfInputs = preg_match_all ("/(?s)(<[ \n\r]*input.*?[ \n\r]*[^>]*>)/is", $form, $matches);
+		return $matches[0];
 	}
 }
 
 if (defined("TYPO3_MODE") && $TYPO3_CONF_VARS[TYPO3_MODE]["XCLASS"]["ext/spamshield/class.tx_spamshield_formmodifier.php"]){
-        include_once($TYPO3_CONF_VARS[TYPO3_MODE]["XCLASS"]["ext/spamshield/class.tx_spamshield_formmodifier.php"]);
+		include_once($TYPO3_CONF_VARS[TYPO3_MODE]["XCLASS"]["ext/spamshield/class.tx_spamshield_formmodifier.php"]);
 }
 ?>

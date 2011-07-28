@@ -4,7 +4,7 @@ page.headerData.5289.value (
 <script type="text/javascript">
 	//<![CDATA[
 		document.cookie = 'spamshield=true' ;
-    //]]>
+	//]]>
 </script>
 )
 
@@ -14,8 +14,8 @@ page.includeCSS.spamshield = typo3conf/ext/spamshield/style.css
 # adding to all forms - for honeypot check
 plugin.tx_spamshield = USER
 plugin.tx_spamshield {
-	add2forms = 1 											
-    add2forms {	
+		add2forms = 1
+		add2forms {
 		# regular expression for a form to disable the add2forms option
 		off {
 			#10 = /action=\"http/usi

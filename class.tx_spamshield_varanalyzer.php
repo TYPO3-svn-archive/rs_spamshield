@@ -23,26 +23,26 @@
 *  This copyright notice MUST APPEAR in all copies of the script!
 ***************************************************************/
 
-require_once (PATH_tslib."class.tslib_pibase.php");
-require_once (PATH_tslib."class.tslib_content.php");
+require_once (PATH_tslib.'class.tslib_pibase.php');
+require_once (PATH_tslib.'class.tslib_content.php');
 
 class tx_spamshield_varanalyzer extends tslib_pibase  {
 
-	var $prefixId = "tx_spamshield_varanalyzer";                       // Same as class name
-	var $scriptRelPath = "class.tx_spamshield_varanalyzer.php";        // Path to this script relative to the extension dir.
-	var $extKey = "spamshield";        // The extension key.
+	var $prefixId = 'tx_spamshield_varanalyzer';									// Same as class name
+	var $scriptRelPath = 'class.tx_spamshield_varanalyzer.php';		// Path to this script relative to the extension dir.
+	var $extKey = 'spamshield';		// The extension key.
 	
-	var $params = false;    	// Complete TS-Config 
-	var $pObj = false;			// pObj at time of hook call
+	var $params = false;	// Complete TS-Config 
+	var $pObj = false;		// pObj at time of hook call
 
-	var $conf = false;       	// config from ext_conf_template.txt
+	var $conf = false;		// config from ext_conf_template.txt
 	
-	var $GETparams;    		// GET variables
-	var $POSTparams;    	// POST variables
-	var $GPparams;    		// POST variables
+	var $GETparams;				// GET variables
+	var $POSTparams;			// POST variables
+	var $GPparams;				// POST variables
 	
 	var $spamReason = array(); 	// description of the error
-	var $spamWeight = 0;   	 	// weight of the spam
+	var $spamWeight = 0;			 	// weight of the spam
 
 	/**
 	 * Hook page id lookup before rendering the content.
@@ -63,7 +63,7 @@ class tx_spamshield_varanalyzer extends tslib_pibase  {
 
 		// check Spam according to rules
 		if (!$this->conf['rule']) {
-			$this->conf['rule'] = "useragent,1;referer,1;javascript,1;honeypot,1;httpbl,1";
+			$this->conf['rule'] = 'useragent,1;referer,1;javascript,1;honeypot,1;httpbl,1';
 		}
 		$rules = explode(';',$this->conf['rule']);
 		foreach ($rules as $rule) {
@@ -84,11 +84,26 @@ class tx_spamshield_varanalyzer extends tslib_pibase  {
 		}
 		if ($this->spamWeight >= $this->conf['weight']) {
 			$this->dbLog();
-			$this->stopOutput(); 
+			if (((int) $this->conf['redirecttopid']) > 0) {
+				$this->stopOutputAndRedirect();
+			} else {
+				$this->stopOutput();
+			} 
 		}	
 		else {
-			return;  // no spam detected
+			return;	// no spam detected
 		}
+	}
+
+	/**
+	 * Stops TYPO3 output and redirects to another TYPO3 page. 
+	 *
+	 * @return	void
+	 */	
+	function stopOutputAndRedirect() {
+		header('HTTP/1.1 403 Forbidden');
+		header('Location: '.t3lib_div::getIndpEnv('TYPO3_SITE_URL') . '/index.php?id='.((int) $this->conf['redirecttopid']));
+		die();
 	}
 
 	/**
@@ -115,11 +130,11 @@ class tx_spamshield_varanalyzer extends tslib_pibase  {
 </html>
 		';
 		// Prevent caching on the client side
-		header("Expires: 0");                                           // Datum aus Vergangenheit
-		header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");  // immer geändert
-		header("Cache-Control: no-store, no-cache, must-revalidate");   // HTTP/1.1
-		header("Cache-Control: post-check=0, pre-check=0", false);
-		header("Pragma: no-cache");                                     // HTTP/1.0
+		header('Expires: 0');																						// Datum aus Vergangenheit
+		header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT');	// immer geändert
+		header('Cache-Control: no-store, no-cache, must-revalidate');		// HTTP/1.1
+		header('Cache-Control: post-check=0, pre-check=0', false);
+		header('Pragma: no-cache');																			// HTTP/1.0
 		print $output;
 		die();
 	}
@@ -131,35 +146,32 @@ class tx_spamshield_varanalyzer extends tslib_pibase  {
 	 * @return  boolean
 	 */
 	function dbLog() {
-		if (!$this->conf['logpid']) {
-			$this->conf['logpid'] = 0;
-		}
-		elseif ($this->conf['logpid'] == -1) {
+		if (((int) $this->conf['logpid']) === 0) {
 			return; // log is disabled
 		}
 		if ($this->piVars['refpid']) {
 			$ref = $this->piVars['refpid'];
 		}
 		else {
-			$ref = $GLOBALS["TSFE"]->id;
+			$ref = $GLOBALS['TSFE']->id;
 		}
-        $db_values = array (
-        	'pid' => mysql_escape_string($this->conf['logpid']),  // spam-log storage page
-            'tstamp' => time(),
-            'crdate' => time(),
-            'spamWeight' => mysql_escape_string($this->spamWeight),
-            'spamReason' => mysql_escape_string(implode(',',$this->spamReason)),
-            'postvalues' => mysql_escape_string(t3lib_utility_Debug::viewArray($this->POSTparams)),  	# Typo3 < 4.5: t3lib_div::view_array(...)
-            'getvalues' => mysql_escape_string(t3lib_utility_Debug::viewArray($this->GETparams)),		# Typo3 < 4.5: t3lib_div::view_array(...)
-            'pageid' => mysql_escape_string($ref),
+		$db_values = array (
+			'pid' => mysql_escape_string($this->conf['logpid']),  // spam-log storage page
+			'tstamp' => time(),
+			'crdate' => time(),
+			'spamWeight' => mysql_escape_string($this->spamWeight),
+			'spamReason' => mysql_escape_string(implode(',',$this->spamReason)),
+			'postvalues' => mysql_escape_string(t3lib_utility_Debug::viewArray($this->POSTparams)),  	# Typo3 < 4.5: t3lib_div::view_array(...)
+			'getvalues' => mysql_escape_string(t3lib_utility_Debug::viewArray($this->GETparams)),		# Typo3 < 4.5: t3lib_div::view_array(...)
+			'pageid' => mysql_escape_string($ref),
 			'requesturl' => t3lib_div::getIndpEnv('TYPO3_REQUEST_URL'),
-            'ip' => mysql_escape_string(t3lib_div::getIndpEnv('REMOTE_ADDR')),
-            'useragent' => mysql_escape_string(t3lib_div::getIndpEnv('HTTP_USER_AGENT')),
-            'referer' => mysql_escape_string(t3lib_div::getIndpEnv('HTTP_REFERER'))
-        );
-        $GLOBALS['TYPO3_DB']->exec_INSERTquery('tx_spamshield_log', $db_values); // DB entry
+			'ip' => mysql_escape_string(t3lib_div::getIndpEnv('REMOTE_ADDR')),
+			'useragent' => mysql_escape_string(t3lib_div::getIndpEnv('HTTP_USER_AGENT')),
+			'referer' => mysql_escape_string(t3lib_div::getIndpEnv('HTTP_REFERER'))
+		);
+		$GLOBALS['TYPO3_DB']->exec_INSERTquery('tx_spamshield_log', $db_values); // DB entry
 		return;
-    }
+	}
 	
 	/*
 		from mh_httpbl
@@ -188,14 +200,14 @@ class tx_spamshield_varanalyzer extends tslib_pibase  {
 		else {
 			$type = -3;
 			$codes = array(  # codes used by httpbl.org
-		0 => 'Search Engine',
-		1 => 'Suspicious',
-		2 => 'Harvester',
-		3 => 'Suspicious &amp; Harvester',
-		4 => 'Comment Spammer',
-		5 => 'Suspicious &amp; Comment Spammer',
-		6 => 'Harvester &amp; Comment Spammer',
-		7 => 'Suspicious &amp; Harvester &amp; Comment Spammer'
+					0 => 'Search Engine',
+					1 => 'Suspicious',
+					2 => 'Harvester',
+					3 => 'Suspicious &amp; Harvester',
+					4 => 'Comment Spammer',
+					5 => 'Suspicious &amp; Comment Spammer',
+					6 => 'Harvester &amp; Comment Spammer',
+					7 => 'Suspicious &amp; Harvester &amp; Comment Spammer'
 			);
 			$domain	= 'dnsbl.httpbl.org';
 			$request = $this->conf['accesskey'].'.'.implode('.', array_reverse(explode('.', $_SERVER['REMOTE_ADDR']))).'.'.$domain;
@@ -218,11 +230,11 @@ class tx_spamshield_varanalyzer extends tslib_pibase  {
 	/**
 	* useragant
 	*
-    * Every browser sends a HTTP_USER_AGENT value to a server.
-    * 	So a missing HTTP_USER_AGENT value almost always indicates a spammer bot.
-    */
+	* Every browser sends a HTTP_USER_AGENT value to a server.
+	* 	So a missing HTTP_USER_AGENT value almost always indicates a spammer bot.
+	*/
 	function useragent() {
-	    if (t3lib_div::getIndpEnv('HTTP_USER_AGENT') == "") {
+		if (t3lib_div::getIndpEnv('HTTP_USER_AGENT') == '') {
 		   	return TRUE;  		// = spam
 		}
 		return FALSE; // no spam;
@@ -231,36 +243,36 @@ class tx_spamshield_varanalyzer extends tslib_pibase  {
 	/**
 	* referer
 	*
-    * The most of browsers (all modern browsers) send a HTTP_REFERER value,
-    * 	... which would contain the submitted form URL.
-    *   ... which therefore should be from same domain.
-    *  Whereas clever bots send this value, a missing HTTP_REFERER value could mean a bot submitting.
-    *  Note. There are several firewall and security products which block HTTP_REFERER by default.
-    *  So, none of these people could send a message if you block posting without HTTP_REFERER.
+	* The most of browsers (all modern browsers) send a HTTP_REFERER value,
+	* 	... which would contain the submitted form URL.
+	*   ... which therefore should be from same domain.
+	*  Whereas clever bots send this value, a missing HTTP_REFERER value could mean a bot submitting.
+	*  Note. There are several firewall and security products which block HTTP_REFERER by default.
+	*  So, none of these people could send a message if you block posting without HTTP_REFERER.
 	 */
 	function referer() {
 		// no form data send => external referers are o.k.
-	    if (!is_array($this->POSTparams) || sizeof($this->POSTparams) == 0) {
+		if (!is_array($this->POSTparams) || sizeof($this->POSTparams) == 0) {
 			return FALSE;  // no spam
 		}
 		elseif ($this->conf['whitelist']) {
-            $whiteList = explode(',',$this->conf['whitelist']);
-            foreach ($whiteList as $white) {
+			$whiteList = explode(',',$this->conf['whitelist']);
+			foreach ($whiteList as $white) {
 				$white = trim($white);
-                if (strpos(t3lib_div::getIndpEnv("HTTP_REFERER"),$white)!==false) {
-                    return FALSE; // no spam
-                }
-            }  
-        }
+				if (strpos(t3lib_div::getIndpEnv('HTTP_REFERER'),$white)!==false) {
+					return FALSE; // no spam
+				}
+			}  
+		}
 		// checking for empty referers or referers that are external of the website
 		elseif (
-			(!t3lib_div::getIndpEnv('HTTP_REFERER') || t3lib_div::getIndpEnv("HTTP_REFERER") == "")
+			(!t3lib_div::getIndpEnv('HTTP_REFERER') || t3lib_div::getIndpEnv('HTTP_REFERER') == '')
 			||
 			($GLOBALS['TSFE']->tmpl->setup['config.']['baseUrl'] &&
-			!strstr(t3lib_div::getIndpEnv("HTTP_REFERER"),$GLOBALS['TSFE']->tmpl->setup['config.']['baseURL'])) 
+			!strstr(t3lib_div::getIndpEnv('HTTP_REFERER'),$GLOBALS['TSFE']->tmpl->setup['config.']['baseURL'])) 
 			|| 
 			($GLOBALS['TSFE']->tmpl->setup['config.']['absRefPrefix'] &&
-		    !strstr(t3lib_div::getIndpEnv("HTTP_REFERER"),$GLOBALS['TSFE']->tmpl->setup['config.']['absRefPrefix']))
+			!strstr(t3lib_div::getIndpEnv('HTTP_REFERER'),$GLOBALS['TSFE']->tmpl->setup['config.']['absRefPrefix']))
 			){
 			return TRUE; // spam
 		}
@@ -282,7 +294,7 @@ class tx_spamshield_varanalyzer extends tslib_pibase  {
 ###
 # to do: find a better java skript check
 ###
-	    if (!is_array($this->POSTparams) || sizeof($this->POSTparams) == 0) {
+		if (!is_array($this->POSTparams) || sizeof($this->POSTparams) == 0) {
 			return FALSE;  // no spam
 		}
 		elseif (!$_COOKIE['spamshield']) {
@@ -302,7 +314,7 @@ class tx_spamshield_varanalyzer extends tslib_pibase  {
 	 */
 	function cookie() {
 		// no form data send => new users are wellcome and have no cookie
-	    if (!is_array($this->POSTparams) || sizeof($this->POSTparams) == 0) {
+		if (!is_array($this->POSTparams) || sizeof($this->POSTparams) == 0) {
 			return FALSE;  // no spam
 		}
 		elseif (!$_COOKIE['fe_typo_user']) {
@@ -330,8 +342,8 @@ class tx_spamshield_varanalyzer extends tslib_pibase  {
 	}	
 }
 
-if (defined("TYPO3_MODE") && $TYPO3_CONF_VARS[TYPO3_MODE]["XCLASS"]["ext/spamshield/class.tx_spamshield_varanalyzer.php"]){
-        include_once($TYPO3_CONF_VARS[TYPO3_MODE]["XCLASS"]["ext/spamshield/class.tx_spamshield_varanalyzer.php"]);
+if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/spamshield/class.tx_spamshield_varanalyzer.php']){
+		include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/spamshield/class.tx_spamshield_varanalyzer.php']);
 }
 
 ?>

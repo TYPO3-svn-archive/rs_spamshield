@@ -1,0 +1,26 @@
+http://httpbl.org - blockt nichts??
+timtab_badbehavior - funktioniert???
+
+
+Inspirationen:
+http://www.hilfdirselbst.ch/foren/Wie_kann_ich_effektiv_Formularspam_verhindern_P215882.html#215882
+http://bad-behavior.ioerror.us
+http://kahi.cz/wordpress/ravens-antispam-plugin/
+Track-Back Validation: http://sw-guide.de/wordpress/plugins/simple-trackback-validation/
+
+To do:
+- Datums-Feld anzeigen in Spam-Log
+- JavaScript Check als formular-Feld
+
+Deutschland 1.05 % kein JavaScript; USA 3,5 % kein JavaScript; v.a. netbooks
+
+Aufteilen in:
+1. Linie: Webseite
+- httpbl.org / bad behavior / trackback / Klick-Speed (Google!) / ...
+2. Linie: Formular
+- Honey-Pot, Cookie (Achtung 404-Suche), Referrer nur interne Seiten, 
+- Java-Skript (möglicherweise mit Captcha Noscript Alternative - CAVE: Formulare im Headder) 
+- Umkodieren aller Formualrfeld-Namen und Recodieren mit im Formular hidden Feld.
+- Time-Frame: Zeit-Stempel als Hidden-Field mitgeben Formular absenden 8 Sekunden 20 Minuten = Rahmen (CAVE: Cache)
+- Double Submit Blocken: Jedes Formular bekommt beim generieren eine UID => kann nur einmal abgesendet werden (Reaload)(CAVE: Cache)
+- Fehl-Versuche checken: Bei zu vielen blocken.

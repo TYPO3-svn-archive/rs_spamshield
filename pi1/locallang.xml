@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<T3locallang>
+    <meta type="array">
+        <type>database</type>
+        <description>Language labels for database tables/fields belonging to extension 'spamshield'</description>
+    </meta>
+
+    <data type="array">
+        <languageKey index="default" type="array">
+			<label index="message.wronglink">Wrong Link</label>
+			<label index="message.wronguid">Wrong UID</label>
+			<label index="message.wrongauth">Wrong Auth-Code</label>
+			<label index="form.submit">submit</label>
+        </languageKey>
+    </data>
+
+</T3locallang>

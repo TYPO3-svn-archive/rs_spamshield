@@ -17,6 +17,7 @@
           ip tinytext NOT NULL,
           useragent tinytext NOT NULL,
           referer tinytext NOT NULL,
+		  solved tinyint(4) DEFAULT '0' NOT NULL,
 
           PRIMARY KEY (uid),
           KEY parent (pid)

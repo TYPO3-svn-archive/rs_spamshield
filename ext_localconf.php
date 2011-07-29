@@ -19,4 +19,9 @@ $TYPO3_CONF_VARS['SC_OPTIONS']['tslib/class.tslib_fe.php']['contentPostProc-all'
 $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['tslib/class.tslib_fe.php']['determineId-PostProc'][] = 'EXT:'.$_EXTKEY.'/class.tx_spamshield_varanalyzer.php:&tx_spamshield_varanalyzer->main';
 #####################################################
 
+#####################################################
+## FE-Plugin                                  #######
+#####################################################
+t3lib_extMgm::addPItoST43($_EXTKEY, 'pi1/class.tx_spamshield_pi1.php', '_pi1', 'list_type', 0);
+#####################################################
 ?>

@@ -1,5 +1,8 @@
-# cat=basic; type=string; label=Ruleset for spamshield: The order and weight of spamshield functions to use.
-rule = useragent,1;referer,1;cookie,1;honeypot,1;httpbl,1
+# cat=basic; type=string; label=Ruleset for first line spamshield: Will be blocked ALWAYS! The order and weight of spamshield functions to use.
+firstLine = httpbl,1
+
+# cat=basic; type=string; label=Ruleset for second line spamshield: Will be blocked on form submission! The order and weight of spamshield functions to use.
+secondLine = useragent,1;referer,1;cookie,1;honeypot,1
 
 # cat=basic; type=int [0-255]; label=Crictical Weight for spam: A user is blocked when this spam weight is fulfilled.
 weight = 2

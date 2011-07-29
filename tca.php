@@ -5,7 +5,7 @@ if(!defined('TYPO3_MODE'))
 $TCA['tx_spamshield_log'] = array (
     'ctrl' => $TCA['tx_spamshield_log']['ctrl'],
     'interface' => array (
-        'showRecordFieldList' => 'spamreason,requesturl,spamweight,postvalues,getvalues,pageid,ip,useragent,referer'
+        'showRecordFieldList' => 'spamreason, spamweight, postvalues, getvalues, requesturl, pageid, referer, ip, useragent, solved'
     ),
     'feInterface' => $TCA['tx_spamshield_log']['feInterface'],
     'columns' => array (
@@ -17,14 +17,6 @@ $TCA['tx_spamshield_log'] = array (
                 'size' => '30',
             )
         ),
-        'requesturl' => Array (
-            'exclude' => 1,
-            'label' => 'LLL:EXT:spamshield/locallang.xml:tx_spamshield_log.requesturl',
-            'config' => Array (
-                'type' => 'input',
-                'size' => '80',
-            )
-        ),
         'spamweight' => Array (
             'exclude' => 1,
             'label' => 'LLL:EXT:spamshield/locallang.xml:tx_spamshield_log.spamweight',
@@ -33,24 +25,13 @@ $TCA['tx_spamshield_log'] = array (
                 'size' => '5',
             )
         ),
-        'postvalues' => array (
+		'postvalues' => array (
             'exclude' => 1,
             'label' => 'LLL:EXT:spamshield/locallang.xml:tx_spamshield_log.postvalues',
             'config' => array (
                 'type' => 'text',
                 'cols' => '30',
                 'rows' => '5',
-                'wizards' => array (
-                    '_PADDING' => 2,
-                    'RTE' => array(
-                        'notNewRecords' => 1,
-                        'RTEonly' => 1,
-                        'type' => 'script',
-                        'title' => 'RTE content',
-                        'icon' => 'wizard_rte2.gif',
-                        'script' => 'wizard_rte.php',
-                    ),
-                ),
             )
         ),
         'getvalues' => array (
@@ -60,17 +41,14 @@ $TCA['tx_spamshield_log'] = array (
                 'type' => 'text',
                 'cols' => '30',
                 'rows' => '5',
-                'wizards' => array (
-                    '_PADDING' => 2,
-                    'RTE' => array(
-                        'notNewRecords' => 1,
-                        'RTEonly' => 1,
-                        'type' => 'script',
-                        'title' => 'RTE content',
-                        'icon' => 'wizard_rte2.gif',
-                        'script' => 'wizard_rte.php',
-                    ),
-                ),
+            )
+        ),
+        'requesturl' => Array (
+            'exclude' => 1,
+            'label' => 'LLL:EXT:spamshield/locallang.xml:tx_spamshield_log.requesturl',
+            'config' => Array (
+                'type' => 'input',
+                'size' => '80',
             )
         ),
         'pageid' => Array (
@@ -79,6 +57,14 @@ $TCA['tx_spamshield_log'] = array (
             'config' => Array (
                 'type' => 'input',
                 'size' => '5',
+            )
+        ),
+        'referer' => Array (
+            'exclude' => 1,
+            'label' => 'LLL:EXT:spamshield/locallang.xml:tx_spamshield_log.referer',
+            'config' => Array (
+                'type' => 'input',
+                'size' => '30',
             )
         ),
         'ip' => Array (
@@ -97,17 +83,17 @@ $TCA['tx_spamshield_log'] = array (
                 'size' => '30',
             )
         ),
-        'referer' => Array (
+        'solved' => Array (
             'exclude' => 1,
-            'label' => 'LLL:EXT:spamshield/locallang.xml:tx_spamshield_log.referer',
+            'label' => 'LLL:EXT:spamshield/locallang.xml:tx_spamshield_log.solved',
             'config' => Array (
-                'type' => 'input',
-                'size' => '30',
+                'type' => 'check',
+                'default' => '0',
             )
         ),
     ),
     'types' => array (
-        '0' => array('showitem' => 'spamreason,requesturl,spamweight, postvalues;;;richtext[], getvalues;;;richtext[], pageid, ip, useragent, referer')
+        '0' => array('showitem' => 'spamreason, spamweight, postvalues, getvalues, requesturl, pageid, referer, ip, useragent, solved')
     ),
     'palettes' => array (
         '1' => array('showitem' => '')

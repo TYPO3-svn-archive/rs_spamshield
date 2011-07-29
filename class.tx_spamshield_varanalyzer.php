@@ -39,10 +39,10 @@ class tx_spamshield_varanalyzer extends tslib_pibase  {
 	
 	var $GETparams;				// GET variables
 	var $POSTparams;			// POST variables
-	var $GPparams;				// POST variables
+	var $GPparams;				// POST and GET variables
 	
 	var $spamReason = array(); 	// description of the error
-	var $spamWeight = 0;			 	// weight of the spam
+	var $spamWeight = 0;		// weight of the spam
 
 	/**
 	 * Hook page id lookup before rendering the content.
@@ -61,11 +61,76 @@ class tx_spamshield_varanalyzer extends tslib_pibase  {
 		$this->POSTparams = t3lib_div::_POST();
 		$this->GPparams =  t3lib_div::array_merge_recursive_overrule($this->GETparams,$this->POSTparams,0,0);
 
-		// check Spam according to rules
-		if (!$this->conf['rule']) {
-			$this->conf['rule'] = 'useragent,1;referer,1;javascript,1;honeypot,1;httpbl,1';
+		// check if data already is verified with the spamshield auth
+		if ($this->GPparams['spamshield']['uid'] && $this->GPparams['spamshield']['auth']) {
+			$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery('*', 'tx_spamshield_log', 'uid='.$this->GPparams['spamshield']['uid'].' AND deleted=0');
+			if ($GLOBALS['TYPO3_DB']->sql_num_rows($res)) { ## UID nicht vorhanden vorhanden
+				$data = $GLOBALS['TYPO3_DB']->sql_fetch_assoc ($res);
+				if ($this->checkAuthCode($this->GPparams['spamshield']['auth'],$data)) {
+					unset($data['auth']);
+					$data['tstamp']= time();
+					$data['solved'] = 1;
+					$res = $GLOBALS['TYPO3_DB']->exec_UPDATEquery('tx_spamshield_log','uid=\''.$data['uid'].'\'', $data);
+					return;	// bypass rest of spamshield. Imput verified with captcha
+				}
+			}
 		}
-		$rules = explode(';',$this->conf['rule']);
+		
+		// first line of defence:
+		// Block always no matter if a form has been submittet or not
+		if (!$this->conf['firstLine']) {
+			$this->conf['firstLine'] = 'httpbl,1';
+			$this->check($this->conf['firstLine']);
+		}
+		// second line of defence:
+		// Block only when a form has been submittet
+		if (!$this->conf['secondLine']) {
+			$this->conf['secondLine'] = 'useragent,1;referer,1;javascript,1;honeypot,1;';
+		}
+		if ($this->checkFormSubmission()) {
+			$this->check($this->conf['secondLine']);
+		}
+		
+		// if spam => dbLog and stopOutput and Redirect
+		if (!$this->conf['weight']) {
+			$this->conf['weight'] = 1;
+		}
+		if ($this->spamWeight >= $this->conf['weight']) {
+			if (((int) $this->conf['redirecttopid']) > 0 && ((int) $this->conf['logpid']) === 0) {
+				$this->conf['logpid'] = $this->conf['redirecttopid']; // DB-Logging is necessary for redirection!
+			}
+			if (((int) $this->conf['logpid']) !== 0) {
+				$data = $this->dbLog();  // DB-Logging
+			}
+			// option for second line of defence to verify with captcha page
+			if (((int) $this->conf['redirecttopid']) > 0 && $this->checkFormSubmission()) {
+				$this->stopOutputAndRedirect($data);
+			} 
+			// block completely - only way for first line of defence up to now ....
+			// verifying a user agent / user configuratioon with captcha could be doable
+			// but first line of spamshield anyway has view false positives - and should have!!
+			else {
+				$this->stopOutput();
+			} 
+		}	
+		else {
+			return;	// no spam detected
+		}
+	}
+
+#####################################################
+## General Funktions                               ##
+#####################################################	
+
+	/**
+	* Walks one rule set of checks. 
+	* If a check is false, gives the corresponding weight
+	*
+	* @param    string	a rule set: rule1,weight;rule2,weight
+	* @return	nothing
+	*/	
+	function check($ruleSet) {
+		$rules = explode(';',$ruleSet);
 		foreach ($rules as $rule) {
 			list($function,$weight) = explode(',',$rule);
 			$function = trim($function);
@@ -77,41 +142,79 @@ class tx_spamshield_varanalyzer extends tslib_pibase  {
 				}
 			}
 		}
-		
-		// if spam => dbLog and stopOutput
-		if (!$this->conf['weight']) {
-			$this->conf['weight'] = 1;
+	}
+	
+	/**
+	* Checks if a form has been submitted 
+	*
+	* @param    nothing
+	* @return	boolean
+	*/	
+	function checkFormSubmission () {
+		if ($this->POSTparams['spamshield']['mark']) {
+			return TRUE; // a form has been submitted
 		}
-		if ($this->spamWeight >= $this->conf['weight']) {
-			$this->dbLog();
-			if (((int) $this->conf['redirecttopid']) > 0) {
-				$this->stopOutputAndRedirect();
-			} else {
-				$this->stopOutput();
-			} 
-		}	
+		if (is_array($this->POSTparams) && sizeof($this->POSTparams) != 0) {
+			return TRUE; // a form has been submitted
+		}
+		return FALSE; // regular page request with no form data
+	}
+	
+	/**
+	* Checks a given auth code 
+	*
+	* @param    int		auth code
+	* @param	array	DB-Row to check the auth code
+	* @return	boolean
+	*/	
+	function checkAuthCode($authCode,&$row) {
+		$authCodeFields = ($this->conf['authcodeFields'] ? $this->conf['authcodeFields'] : 'uid');
+		$ac = t3lib_div::stdAuthCode ($row,$authCodeFields);
+		if ($ac==$authCode) {
+			$row['auth'] = $authCode;
+			return true;
+		}
 		else {
-			return;	// no spam detected
+			return false;
 		}
 	}
 
 	/**
-	 * Stops TYPO3 output and redirects to another TYPO3 page. 
-	 *
-	 * @return	void
-	 */	
-	function stopOutputAndRedirect() {
-		header('HTTP/1.1 403 Forbidden');
-		header('Location: '.t3lib_div::getIndpEnv('TYPO3_SITE_URL') . '/index.php?id='.((int) $this->conf['redirecttopid']));
+	* Stops TYPO3 output and redirects to another TYPO3 page. 
+	*
+	* @param    array	the DB-Row of the spam log
+	* @param	int		uid of the fields used for auth code
+	* @return	void
+	*/	
+	function stopOutputAndRedirect($data,$authCodeFields = "uid") {
+		$link['parameter'] = $this->conf['redirecttopid']; // pid for link
+		$link['returnLast'] = 'url'; // get it as URL
+		$link['useCacheHash'] = 0; // make it a caching link = 1
+		if ($this->GPparams['L']) {
+			$link['ATagParams'] .= 'L='.$this->GPparams['L'].' ';
+		}
+		$link['ATagParams'] .= 'uid='.$data['uid'].' ';
+		$link['ATagParams'] .= 'auth='.t3lib_div::stdAuthCode($data,$authCodeFields).' ';
+		#$link['additionalParams'] = 'myExtension[key1]=value1&myExtension[key2]=value2'; // Extension parameters
+		/*
+		#$this->cObj = t3lib_div::makeInstance('tslib_cObj'); // init cObject for typolink ... not working, as no FE availabel
+		$this->cObj = $this->createCObj(100);  // trying to create an cObject without the rest of FE available ... not working
+		$url = $this->cObj->typolink('link text',$link); // typolink
+		*/
+		$url = t3lib_div::getIndpEnv('TYPO3_SITE_URL').'index.php?id='.$link['parameter'].'&'.str_replace(' ','&',trim($link['ATagParams']));
+		// redirect to cpatcha check / result page
+		header("HTTP/1.0 301 Moved Permanently");   // sending a normal header does trick spam robots. They think everything is fine
+		header('Location: '.$url);
 		die();
 	}
 
 	/**
-	 * Stops TYPO3 output and shows an error page. 
-	 * - derivated from mh_httpbl
-	 *
-	 * @return	void
-	 */	
+	* Stops TYPO3 output and shows an error page. 
+	* - derivated from mh_httpbl
+	*
+	* @param 	nothing
+	* @return	void
+	*/	
 	function stopOutput() {
 		if (!$this->conf['message']) {
 			$this->conf['message'] = '<strong>you have been blocked.</strong>';
@@ -140,55 +243,60 @@ class tx_spamshield_varanalyzer extends tslib_pibase  {
 	}
 	
 	/**
-	 * Put a log entry in the DB if spam is detected
-	 *
-	 * @param	nothing
-	 * @return  boolean
-	 */
+	* Put a log entry in the DB if spam is detected
+	*
+	* @param	nothing
+	* @return  boolean
+	*/
 	function dbLog() {
-		if (((int) $this->conf['logpid']) === 0) {
-			return; // log is disabled
-		}
 		if ($this->piVars['refpid']) {
 			$ref = $this->piVars['refpid'];
 		}
 		else {
 			$ref = $GLOBALS['TSFE']->id;
 		}
-		$db_values = array (
+		$data = array (
 			'pid' => mysql_escape_string($this->conf['logpid']),  // spam-log storage page
 			'tstamp' => time(),
 			'crdate' => time(),
 			'spamWeight' => mysql_escape_string($this->spamWeight),
 			'spamReason' => mysql_escape_string(implode(',',$this->spamReason)),
-			'postvalues' => mysql_escape_string(t3lib_utility_Debug::viewArray($this->POSTparams)),  	# Typo3 < 4.5: t3lib_div::view_array(...)
-			'getvalues' => mysql_escape_string(t3lib_utility_Debug::viewArray($this->GETparams)),		# Typo3 < 4.5: t3lib_div::view_array(...)
+			'postvalues' => mysql_escape_string(serialize($this->POSTparams)), 
+			'getvalues' => mysql_escape_string(serialize($this->GETparams)),		
 			'pageid' => mysql_escape_string($ref),
 			'requesturl' => t3lib_div::getIndpEnv('TYPO3_REQUEST_URL'),
 			'ip' => mysql_escape_string(t3lib_div::getIndpEnv('REMOTE_ADDR')),
 			'useragent' => mysql_escape_string(t3lib_div::getIndpEnv('HTTP_USER_AGENT')),
-			'referer' => mysql_escape_string(t3lib_div::getIndpEnv('HTTP_REFERER'))
+			'referer' => mysql_escape_string(t3lib_div::getIndpEnv('HTTP_REFERER')),
+			'solved' => 0
 		);
-		$GLOBALS['TYPO3_DB']->exec_INSERTquery('tx_spamshield_log', $db_values); // DB entry
-		return;
+		$res = $GLOBALS['TYPO3_DB']->exec_INSERTquery('tx_spamshield_log', $data); // DB entry
+		$data['uid'] = $GLOBALS['TYPO3_DB']->sql_insert_id();
+		return $data;
 	}
-	
+
+#####################################################
+## Functions for first Line Defence                ##
+#####################################################	
 	/*
-		from mh_httpbl
-		-5 => 'localhost'
-		- 3 => 'sonstiges = here possibly whitelist / blacklist'
-		-2 => 'no REMOTE_ADDR = no request possible'
-		-1 => 'no acesskey = no request possible'
-		0 => 'Search Engine',
-		1 => 'Suspicious',
-		2 => 'Harvester',
-		3 => 'Suspicious & Harvester',
-		4 => 'Comment Spammer',
-		5 => 'Suspicious & Comment Spammer',
-		6 => 'Harvester & Comment Spammer',
-		7 => 'Suspicious & Harvester & Comment Spammer'
-		
-		httpbl reccomends to block >= 2
+	*	from mh_httpbl
+	*	-5 => 'localhost'
+	*	- 3 => 'sonstiges = here possibly whitelist / blacklist'
+	*	-2 => 'no REMOTE_ADDR = no request possible'
+	*	-1 => 'no acesskey = no request possible'
+	*	0 => 'Search Engine',
+	*	1 => 'Suspicious',
+	*	2 => 'Harvester',
+	*	3 => 'Suspicious & Harvester',
+	*	4 => 'Comment Spammer',
+	*	5 => 'Suspicious & Comment Spammer',
+	*	6 => 'Harvester & Comment Spammer',
+	*	7 => 'Suspicious & Harvester & Comment Spammer'
+	*	
+	*	httpbl reccomends to block >= 2
+	*
+	* @param	nothing
+	* @return  boolean
 	*/
 	function httpbl() {
 		if (empty($this->conf['accesskey'])) {
@@ -226,12 +334,18 @@ class tx_spamshield_varanalyzer extends tslib_pibase  {
 			return FALSE; // = no Spam
 		}
 	}
-	
+
+#####################################################
+## functions for Eather first or Second Line       ##
+#####################################################	
 	/**
 	* useragant
 	*
 	* Every browser sends a HTTP_USER_AGENT value to a server.
 	* 	So a missing HTTP_USER_AGENT value almost always indicates a spammer bot.
+	*
+	* @param	nothing
+	* @return  boolean
 	*/
 	function useragent() {
 		if (t3lib_div::getIndpEnv('HTTP_USER_AGENT') == '') {
@@ -249,13 +363,12 @@ class tx_spamshield_varanalyzer extends tslib_pibase  {
 	*  Whereas clever bots send this value, a missing HTTP_REFERER value could mean a bot submitting.
 	*  Note. There are several firewall and security products which block HTTP_REFERER by default.
 	*  So, none of these people could send a message if you block posting without HTTP_REFERER.
-	 */
+	*
+	* @param	nothing
+	* @return  boolean
+	*/
 	function referer() {
-		// no form data send => external referers are o.k.
-		if (!is_array($this->POSTparams) || sizeof($this->POSTparams) == 0) {
-			return FALSE;  // no spam
-		}
-		elseif ($this->conf['whitelist']) {
+		if ($this->conf['whitelist']) {
 			$whiteList = explode(',',$this->conf['whitelist']);
 			foreach ($whiteList as $white) {
 				$white = trim($white);
@@ -281,23 +394,23 @@ class tx_spamshield_varanalyzer extends tslib_pibase  {
 		}
 	}
 
+#####################################################
+## Functions for Second Line Defence               ##
+#####################################################
 	/**
-	 * checks if the java-skript cookie is availabel
-	 * some bots don't accept cookies normally
-	 *
-	 * @param	nothing
-	 * @return  boolean  
-	 */
+	* checks if the java-skript cookie is availabel
+	* some bots don't accept cookies normally
+	*
+	* @param	nothing
+	* @return  boolean  
+	*/
 	function javascript() {
 		// no form data send => new users are wellcome and have no cookie
 		return FALSE; // no spam - this check does not work propper in some situations - the cookie gets lost on page changes
 ###
 # to do: find a better java skript check
 ###
-		if (!is_array($this->POSTparams) || sizeof($this->POSTparams) == 0) {
-			return FALSE;  // no spam
-		}
-		elseif (!$_COOKIE['spamshield']) {
+		if (!$_COOKIE['spamshield']) {
 		   	return TRUE; // spam
 		}
 		else {
@@ -306,18 +419,14 @@ class tx_spamshield_varanalyzer extends tslib_pibase  {
 	}
 	
 	/**
-	 * checks if cookie is availabel
-	 * some bots don't accept cookies normally
-	 *
-	 * @param	nothing
-	 * @return  boolean  
-	 */
+	* checks if cookie is availabel
+	* some bots don't accept cookies normally
+	*
+	* @param	nothing
+	* @return  boolean  
+	*/
 	function cookie() {
-		// no form data send => new users are wellcome and have no cookie
-		if (!is_array($this->POSTparams) || sizeof($this->POSTparams) == 0) {
-			return FALSE;  // no spam
-		}
-		elseif (!$_COOKIE['fe_typo_user']) {
+		if (!$_COOKIE['fe_typo_user']) {
 		   	return TRUE; // spam
 		}
 		else {
@@ -326,12 +435,12 @@ class tx_spamshield_varanalyzer extends tslib_pibase  {
 	}
 
 	/**
-	 * checks if honey pot fields are filled in
-	 * bots normally don't read CSS / Java and fill in everything.
-	 *
-	 * @param	nothing
-	 * @return  boolean
-	 */
+	* checks if honey pot fields are filled in
+	* bots normally don't read CSS / Java and fill in everything.
+	*
+	* @param	nothing
+	* @return  boolean
+	*/
 	function honeypot() {
 		if ($this->GPparams['email'] || $this->GPparams['e-mail'] || $this->GPparams['name'] || $this->GPparams['first-name']) {
 			return TRUE; // spam

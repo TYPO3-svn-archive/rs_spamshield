@@ -187,7 +187,7 @@ class tx_spamshield_varanalyzer extends tslib_pibase  {
 	* @return	void
 	*/	
 	function stopOutputAndRedirect($data,$authCodeFields = "uid") {
-		print_r($data);$param = '';
+		$param = '';
 		if ($this->GPparams['L']) {
 			$param .= '&L='.$this->GPparams['L'].' ';
 		}
@@ -200,8 +200,8 @@ class tx_spamshield_varanalyzer extends tslib_pibase  {
 		} else {
 			$url = t3lib_div::getIndpEnv('TYPO3_SITE_URL').'index.php?id='.$this->conf['redirecttopid'].$param;
 		}
-		#header("HTTP/1.0 301 Moved Permanently");	// sending a normal header does trick spam robots. They think everything is fine
-		#header('Location: '.$url);
+		header("HTTP/1.0 301 Moved Permanently");	// sending a normal header does trick spam robots. They think everything is fine
+		header('Location: '.$url);
 		die();
 	}
 
@@ -439,13 +439,15 @@ class tx_spamshield_varanalyzer extends tslib_pibase  {
 	* @return  boolean
 	*/
 	function honeypot() {
-	return true;#todo
-		if ($this->GPparams['email'] || $this->GPparams['e-mail'] || $this->GPparams['name'] || $this->GPparams['first-name']) {
-			return TRUE; // spam
+		if (!$this->conf['honeypot']) {
+			$this->conf['honeypot'] = 'email,e-mail,name,first-name';
 		}
-		else {
-			return FALSE; // no spam
+		foreach (explode(',',$this->conf['honeypot']) as $name) {
+			if ($this->GPparams[$name]) {
+				return TRUE; // spam
+			}
 		}
+		return FALSE; // no spam
 	}	
 }
 

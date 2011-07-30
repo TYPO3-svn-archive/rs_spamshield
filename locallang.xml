@@ -8,15 +8,15 @@
     <data type="array">
         <languageKey index="default" type="array">
             <label index="tx_spamshield_log.spamreason">Spam reason</label>
-			<label index="tx_spamshield_log.spamweight">Spam weight</label>
+            <label index="tx_spamshield_log.spamweight">Spam weight</label>
             <label index="tx_spamshield_log.postvalues">POST values</label>
             <label index="tx_spamshield_log.getvalues">GET values</label>
             <label index="tx_spamshield_log.requesturl">Request URL</label>
             <label index="tx_spamshield_log.pageid">Referer PID</label>
-			<label index="tx_spamshield_log.referer">Referer URL</label>
+            <label index="tx_spamshield_log.referer">Referer URL</label>
             <label index="tx_spamshield_log.ip">User IP</label>
             <label index="tx_spamshield_log.useragent">User Agent</label>
-			<label index="tx_spamshield_log.solved">Solved</label>
+            <label index="tx_spamshield_log.solved">Captcha solved</label>
         </languageKey>
         <languageKey index="de" type="array">
             <label index="tx_spamshield_log.spamreason">Spamgrund</label>
@@ -24,6 +24,7 @@
             <label index="tx_spamshield_log.postvalues">POST Werte</label>
             <label index="tx_spamshield_log.getvalues">GET Werte</label>
             <label index="tx_spamshield_log.pageid">Referer PID</label>
+            <label index="tx_spamshield_log.solved">Captcha gelöst</label>
         </languageKey>
     </data>
 

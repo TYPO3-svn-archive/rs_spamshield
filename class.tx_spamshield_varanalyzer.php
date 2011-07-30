@@ -64,7 +64,7 @@ class tx_spamshield_varanalyzer extends tslib_pibase  {
 		// check if data already is verified with the spamshield auth
 		if ($this->GPparams['spamshield']['uid'] && $this->GPparams['spamshield']['auth']) {
 			$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery('*', 'tx_spamshield_log', 'uid='.$this->GPparams['spamshield']['uid'].' AND deleted=0');
-			if ($GLOBALS['TYPO3_DB']->sql_num_rows($res)) { ## UID nicht vorhanden vorhanden
+			if ($GLOBALS['TYPO3_DB']->sql_num_rows($res)) { # no UID
 				$data = $GLOBALS['TYPO3_DB']->sql_fetch_assoc ($res);
 				if ($this->checkAuthCode($this->GPparams['spamshield']['auth'],$data)) {
 					unset($data['auth']);
@@ -84,13 +84,13 @@ class tx_spamshield_varanalyzer extends tslib_pibase  {
 		}
 		// second line of defence:
 		// Block only when a form has been submittet
-		if (!$this->conf['secondLine']) {
-			$this->conf['secondLine'] = 'useragent,1;referer,1;javascript,1;honeypot,1;';
-		}
 		if ($this->checkFormSubmission()) {
+			if (!$this->conf['secondLine']) {
+				$this->conf['secondLine'] = 'useragent,1;referer,1;javascript,1;honeypot,1;';
+			}
 			$this->check($this->conf['secondLine']);
 		}
-		
+
 		// if spam => dbLog and stopOutput and Redirect
 		if (!$this->conf['weight']) {
 			$this->conf['weight'] = 1;
@@ -119,8 +119,8 @@ class tx_spamshield_varanalyzer extends tslib_pibase  {
 	}
 
 #####################################################
-## General Funktions                               ##
-#####################################################	
+## General functions                               ##
+#####################################################
 
 	/**
 	* Walks one rule set of checks. 
@@ -134,7 +134,7 @@ class tx_spamshield_varanalyzer extends tslib_pibase  {
 		foreach ($rules as $rule) {
 			list($function,$weight) = explode(',',$rule);
 			$function = trim($function);
-			$weight = trim($weight);
+			$weight = (int) $weight;
 			if (method_exists($this,$function)) {
 				if ($this->$function()) {
 					$this->spamReason[] = $function;
@@ -187,24 +187,21 @@ class tx_spamshield_varanalyzer extends tslib_pibase  {
 	* @return	void
 	*/	
 	function stopOutputAndRedirect($data,$authCodeFields = "uid") {
-		$link['parameter'] = $this->conf['redirecttopid']; // pid for link
-		$link['returnLast'] = 'url'; // get it as URL
-		$link['useCacheHash'] = 0; // make it a caching link = 1
+		print_r($data);$param = '';
 		if ($this->GPparams['L']) {
-			$link['ATagParams'] .= 'L='.$this->GPparams['L'].' ';
+			$param .= '&L='.$this->GPparams['L'].' ';
 		}
-		$link['ATagParams'] .= 'uid='.$data['uid'].' ';
-		$link['ATagParams'] .= 'auth='.t3lib_div::stdAuthCode($data,$authCodeFields).' ';
-		#$link['additionalParams'] = 'myExtension[key1]=value1&myExtension[key2]=value2'; // Extension parameters
-		/*
-		#$this->cObj = t3lib_div::makeInstance('tslib_cObj'); // init cObject for typolink ... not working, as no FE availabel
-		$this->cObj = $this->createCObj(100);  // trying to create an cObject without the rest of FE available ... not working
-		$url = $this->cObj->typolink('link text',$link); // typolink
-		*/
-		$url = t3lib_div::getIndpEnv('TYPO3_SITE_URL').'index.php?id='.$link['parameter'].'&'.str_replace(' ','&',trim($link['ATagParams']));
-		// redirect to cpatcha check / result page
-		header("HTTP/1.0 301 Moved Permanently");   // sending a normal header does trick spam robots. They think everything is fine
-		header('Location: '.$url);
+		$param .= '&uid='.$data['uid'].' ';
+		$param .= '&auth='.t3lib_div::stdAuthCode($data,$authCodeFields).' ';
+		// redirect to captcha check / result page
+		if(false){#if (t3lib_extMgm::isLoaded('pagepath')) {
+			require_once(t3lib_extMgm::extPath('pagepath', 'class.tx_pagepath_api.php'));
+			$url = tx_pagepath_api::getPagePath($this->conf['redirecttopid'], $param);
+		} else {
+			$url = t3lib_div::getIndpEnv('TYPO3_SITE_URL').'index.php?id='.$this->conf['redirecttopid'].$param;
+		}
+		#header("HTTP/1.0 301 Moved Permanently");	// sending a normal header does trick spam robots. They think everything is fine
+		#header('Location: '.$url);
 		die();
 	}
 
@@ -336,8 +333,8 @@ class tx_spamshield_varanalyzer extends tslib_pibase  {
 	}
 
 #####################################################
-## functions for Eather first or Second Line       ##
-#####################################################	
+## functions for either first or Second Line       ##
+#####################################################
 	/**
 	* useragant
 	*
@@ -405,7 +402,7 @@ class tx_spamshield_varanalyzer extends tslib_pibase  {
 	* @return  boolean  
 	*/
 	function javascript() {
-		// no form data send => new users are wellcome and have no cookie
+		// no form data send => new users are welcome and have no cookie
 		return FALSE; // no spam - this check does not work propper in some situations - the cookie gets lost on page changes
 ###
 # to do: find a better java skript check
@@ -442,6 +439,7 @@ class tx_spamshield_varanalyzer extends tslib_pibase  {
 	* @return  boolean
 	*/
 	function honeypot() {
+	return true;#todo
 		if ($this->GPparams['email'] || $this->GPparams['e-mail'] || $this->GPparams['name'] || $this->GPparams['first-name']) {
 			return TRUE; // spam
 		}

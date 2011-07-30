@@ -10,14 +10,14 @@
           deleted tinyint(4) DEFAULT '0' NOT NULL,
           spamweight int(11) DEFAULT '0' NOT NULL,
           spamreason text NOT NULL,
-		  requesturl text NOT NULL,
+          requesturl text NOT NULL,
           pageid tinyint(5) DEFAULT '0' NOT NULL,
           postvalues text NOT NULL,
           getvalues text NOT NULL,
           ip tinytext NOT NULL,
           useragent tinytext NOT NULL,
           referer tinytext NOT NULL,
-		  solved tinyint(4) DEFAULT '0' NOT NULL,
+          solved tinyint(4) DEFAULT '0' NOT NULL,
 
           PRIMARY KEY (uid),
           KEY parent (pid)

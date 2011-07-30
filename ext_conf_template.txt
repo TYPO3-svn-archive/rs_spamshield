@@ -22,5 +22,5 @@ logpid = 0
 # cat=basic; type=int+; label=Redirect to PID: The PID where you want the user to be redirected after spam has been detected. Enter zero for none redirection (using the default message / error page).
 redirecttopid = 0
 
-# cat=basic; type=string; label=Blocking message: The message that is send to blocked users.
+# cat=basic; type=string; label=Blocking message: The message that is send to blocked users. (If not redirected.)
 message = <h1>You have been blocked.</h1><p>Sorry for that.</p>

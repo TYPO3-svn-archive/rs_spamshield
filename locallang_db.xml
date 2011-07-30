@@ -2,11 +2,11 @@
 <T3locallang>
 	<meta type="array">
 		<type>database</type>
-		<description>Language labels for database tables/fields belonging to extension 'rs_subscribe'</description>
+		<description>Language labels for database tables/fields belonging to extension 'spamshield'</description>
 	</meta>
 	<data type="array">
 		<languageKey index="default" type="array">
-			<label index="tt_content.list_type_pi1">Spsmshield_pi1: FE-Plugin</label>
+			<label index="tt_content.list_type_pi1">Spamshield: Captcha</label>
 		</languageKey>
 	</data>
 </T3locallang>

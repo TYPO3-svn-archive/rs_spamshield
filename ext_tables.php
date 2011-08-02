@@ -45,4 +45,10 @@ $TCA['tx_spamshield_log'] = array (
 #####################################################
 t3lib_extMgm::addStaticFile($_EXTKEY,'static/', 'spamshield spam protection');  // for TS template
 #####################################################
+
+#####################################################
+## Context sensitive help for tasks           #######
+#####################################################
+t3lib_extMgm::addLLrefForTCAdescr('spamshield','EXT:spamshield/locallang_csh.xml');
+#####################################################
 ?>

@@ -16,7 +16,7 @@ accesskey =
 # cat=basic; type=int [0-255]; label=httpbl - Blocking type: IP type (bitfield) required for an IP to be blocked. 2 is recommended.
 type = 2
 
-# cat=basic; type=string; label=referer - whitelist: if you want to recieve form data from external pages, you can define them in this white list (domain1.de,domain2.com).
+# cat=basic; type=string; label=referer - whitelist: if you want to recieve form data from exteranal pages, you can define them in this white list (domain1.de,domain2.com).
 whitelist = 
 
 # cat=basic; type=int+; label=Spamlog PID: The PID where you want spam to be logged. Enter zero to disable logging.

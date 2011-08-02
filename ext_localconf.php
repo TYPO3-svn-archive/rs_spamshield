@@ -24,4 +24,15 @@ $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['tslib/class.tslib_fe.php']['determine
 #####################################################
 t3lib_extMgm::addPItoST43($_EXTKEY, 'pi1/class.tx_spamshield_pi1.php', '_pi1', 'list_type', 0);
 #####################################################
+
+#####################################################
+## scheduler task                             #######
+#####################################################
+$GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['scheduler']['tasks']['tx_spamshield_logcleaner'] = array(
+    'extension'        => $_EXTKEY,
+    'title'            => 'LLL:EXT:' . $_EXTKEY . '/locallang.xml:tx_spamshield_log.task.name',
+    'description'      => 'LLL:EXT:' . $_EXTKEY . '/locallang.xml:tx_spamshield_log.task.description',
+    'additionalFields' => 'tx_spamshield_logcleaner_additionalfields'
+);
+#####################################################
 ?>

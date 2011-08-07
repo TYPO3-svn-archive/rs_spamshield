@@ -58,7 +58,9 @@ class tx_spamshield_pi1 extends tslib_pibase {
 	
 		$this->GETparams = t3lib_div::_GET();
 		
-		if (!$this->GETparams['uid'] || !$this->GETparams['auth']) {
+		if (!t3lib_extMgm::isLoaded('sr_freecap') && !t3lib_extMgm::isLoaded('captcha')) {
+			$content = '<div class="message red">'.htmlspecialchars($this->pi_getLL('message.nocaptcha')).'</div>';
+		} elseif (!$this->GETparams['uid'] || !$this->GETparams['auth']) {
 			$content = '<div class="message red">'.htmlspecialchars($this->pi_getLL('message.wronglink')).'</div>';
 		}
 		else {
@@ -127,7 +129,7 @@ class tx_spamshield_pi1 extends tslib_pibase {
 		}
 
 		// Captcha
-		if (t3lib_extMgm::isLoaded('sr_freecap') ) {
+		if (t3lib_extMgm::isLoaded('sr_freecap')) {
 			require_once(t3lib_extMgm::extPath('sr_freecap').'pi2/class.tx_srfreecap_pi2.php');
 			$this->freeCap = t3lib_div::makeInstance('tx_srfreecap_pi2');
 			if (is_object($this->freeCap)) {

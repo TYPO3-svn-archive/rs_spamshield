@@ -6,12 +6,14 @@
 	</meta>
 	<data type="array">
 		<languageKey index="default" type="array">
+			<label index="message.nocaptcha">No captcha extension is loaded!</label>
 			<label index="message.wronglink">Wrong Link</label>
 			<label index="message.wronguid">Wrong UID</label>
 			<label index="message.wrongauth">Wrong Auth-Code</label>
 			<label index="form.submit">submit</label>
 		</languageKey>
 		<languageKey index="de" type="array">
+			<label index="message.nocaptcha">Es ist keine Captcha Extension installiert!</label>
 			<label index="message.wronglink">Falscher Link</label>
 			<label index="message.wronguid">Falsche UID</label>
 			<label index="message.wrongauth">Falscher Auth-Code</label>

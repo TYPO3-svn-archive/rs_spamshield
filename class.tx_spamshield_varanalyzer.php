@@ -219,12 +219,12 @@ class tx_spamshield_varanalyzer extends tslib_pibase  {
 		$param .= '&uid='.$data['uid'].' ';
 		$param .= '&auth='.t3lib_div::stdAuthCode($data,$authCodeFields).' ';
 		// redirect to captcha check / result page
-		if(false){#if (t3lib_extMgm::isLoaded('pagepath')) {
+		/*if (t3lib_extMgm::isLoaded('pagepath')) {
 			require_once(t3lib_extMgm::extPath('pagepath', 'class.tx_pagepath_api.php'));
 			$url = tx_pagepath_api::getPagePath($this->conf['redirecttopid'], $param);
-		} else {
+		} else {*/
 			$url = t3lib_div::getIndpEnv('TYPO3_SITE_URL').'index.php?id='.$this->conf['redirecttopid'].$param;
-		}
+		//}
 		header("HTTP/1.0 301 Moved Permanently");	// sending a normal header does trick spam robots. They think everything is fine
 		header('Location: '.$url);
 		die();

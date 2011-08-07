@@ -66,16 +66,16 @@ class tx_spamshield_varanalyzer extends tslib_pibase  {
 			$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery('*', 'tx_spamshield_log', 'uid='.$this->GPparams['spamshield']['uid'].' AND deleted=0');
 			if ($GLOBALS['TYPO3_DB']->sql_num_rows($res)) { # no UID
 				$data = $GLOBALS['TYPO3_DB']->sql_fetch_assoc ($res);
-				if ($this->checkAuthCode($this->GPparams['spamshield']['auth'],$data)) {
+				if ($this->checkAuthCode($this->GPparams['spamshield']['auth'],$data)&&$this->checkCaptcha($this->GPparams['spamshield']['captcha_response'])) {
 					unset($data['auth']);
 					$data['tstamp']= time();
 					$data['solved'] = 1;
 					$res = $GLOBALS['TYPO3_DB']->exec_UPDATEquery('tx_spamshield_log','uid=\''.$data['uid'].'\'', $data);
-					return;	// bypass rest of spamshield. Imput verified with captcha
+					return;	// bypass rest of spamshield. Input verified with captcha
 				}
 			}
 		}
-		
+
 		// first line of defence:
 		// Block always no matter if a form has been submittet or not
 		if (!$this->conf['firstLine']) {
@@ -177,6 +177,31 @@ class tx_spamshield_varanalyzer extends tslib_pibase  {
 		else {
 			return false;
 		}
+	}
+	
+	/**
+	* Checks Captcha value 
+	*
+	* @param    string		Captcha response
+	* @return	boolean
+	*/	
+	function checkCaptcha($captcharesponse) {
+		if (t3lib_extMgm::isLoaded('sr_freecap') ) {
+			require_once(t3lib_extMgm::extPath('sr_freecap').'pi2/class.tx_srfreecap_pi2.php');
+			$this->freeCap = t3lib_div::makeInstance('tx_srfreecap_pi2');
+			if (is_object($this->freeCap)) {
+				return $this->freeCap->checkWord($captcharesponse);
+			}
+		} elseif (t3lib_extMgm::isLoaded('captcha')) {
+			session_start();
+			if($captcharesponse && $captcharesponse === $_SESSION['tx_captcha_string']) {
+				$_SESSION['tx_captcha_string'] = '';
+				return true;
+			}
+			$_SESSION['tx_captcha_string'] = '';
+		}
+
+		return false;
 	}
 
 	/**

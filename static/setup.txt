@@ -17,9 +17,9 @@ plugin.tx_spamshield {
 		add2forms = 1
 		add2forms {
 		# regular expression for a form to disable the add2forms option
+		# 5 is used to detect the pi1 form, which MUST NOT be parsed twice!
 		off {
-			#10 = /action=\"http/usi
-			#20 = /action=http/usi
+			5 = /name=\'frmnoadd2form\'/
 		}
 		# positions: start, end, start-end, rnd
 		position = start-end

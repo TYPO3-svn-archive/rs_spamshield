@@ -119,19 +119,29 @@ class tx_spamshield_pi1 extends tslib_pibase {
 					}
 					else {
 						foreach ($b as $x => $y) {
-							$input[] = '<input type="hidden" name="'.$key.'['.$a.']['.x.']" value="'.$y.'" />';
+							$input[] = '<input type="hidden" name="'.$key.'['.$a.']['.$x.']" value="'.$y.'" />';
 						}
 					}
 				}		
 			}
 		}
+
+		// Captcha
+		if (t3lib_extMgm::isLoaded('sr_freecap') ) {
+			require_once(t3lib_extMgm::extPath('sr_freecap').'pi2/class.tx_srfreecap_pi2.php');
+			$this->freeCap = t3lib_div::makeInstance('tx_srfreecap_pi2');
+			if (is_object($this->freeCap)) {
+				$template = $this->cObj->getSubpart($this->cObj->fileResource('EXT:spamshield/res/sr_freecap.html'), '###CAPTCHA_INSERT###'); // TODO: overwrite template path with TypoScript
+				$input[] = $this->cObj->substituteMarkerArray($template,$this->freeCap->makeCaptcha());
+			}
+		} elseif (t3lib_extMgm::isLoaded('captcha')) {
+			$input[] = '<img src="'.t3lib_extMgm::siteRelPath('captcha').'captcha/captcha.php" alt="" /><br /><input type="text" size="15" name="spamshield[captcha_response]" value="">'; // TODO: Should be a template like sr_freecap
+		}
+
 		$input[] = '<input type="hidden" name="spamshield[uid]" value="'.$data['uid'].'" />';
 		$input[] = '<input type="hidden" name="spamshield[auth]" value="'.$data['auth'].'" />';
 		$input[] = '<input type="submit" value="'.htmlspecialchars($this->pi_getLL('form.submit')).'" />';
-		################################################
-		### Captcha comes here!!! ######################
-		################################################
-		$form = "<form action='".$data['requesturl']."' method='post' name='frm'>".implode('',$input)."</form>";
+		$form = "<form action='".$data['requesturl']."' method='post' name='frmnoadd2form'>".implode('',$input)."</form>";
 		return $form;
 	}	
 }

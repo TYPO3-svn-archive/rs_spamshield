@@ -116,7 +116,7 @@ class tx_spamshield_pi1 extends tslib_pibase {
 			}
 			else {
 				foreach ($val as $a => $b) {
-					if (!is_array($a)) {
+					if (!is_array($b)) {
 						$input[] = '<input type="hidden" name="'.$key.'['.$a.']" value="'.$b.'" />';
 					}
 					else {

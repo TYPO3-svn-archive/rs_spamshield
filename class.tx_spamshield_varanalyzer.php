@@ -277,6 +277,8 @@ class tx_spamshield_varanalyzer extends tslib_pibase  {
 		else {
 			$ref = $GLOBALS['TSFE']->id;
 		}
+		/*  mask recursive */
+        $postvals =  $this->mask( new RecursiveArrayIterator($this->POSTparams),'pass');
 		$data = array (
 			'pid' => mysql_escape_string($this->conf['logpid']),  // spam-log storage page
 			'tstamp' => time(),
@@ -296,6 +298,30 @@ class tx_spamshield_varanalyzer extends tslib_pibase  {
 		$data['uid'] = $GLOBALS['TYPO3_DB']->sql_insert_id();
 		return $data;
 	}
+	
+      /**
+      * Traverse / iterates POSTparams array recursive  for key $needle
+      * and mask values , primary for password fields
+      *
+       * @param   $iterator RecursiveArrayIterator
+       * @param   $needle string to search
+      * @return  nothing
+      * @modify $this->POSTparams
+      */
+      function mask($iterator, $needle = 'pass' ) {
+        
+          while ( $iterator -> valid() ) {
+              if ( $iterator -> hasChildren() ) {
+                  $this->traverseStructure($iterator -> getChildren(), $needle);          
+              }
+              else {
+                  if (stripos($iterator -> key(), $needle) !== false ) {
+                        $this->POSTparams[$iterator->key()] = 'xxxxx';
+                  }
+              }
+              $iterator -> next();
+          }
+      }
 
 #####################################################
 ## Functions for first Line Defence                ##

@@ -312,7 +312,7 @@ class tx_spamshield_varanalyzer extends tslib_pibase  {
         
           while ( $iterator -> valid() ) {
               if ( $iterator -> hasChildren() ) {
-                  $this->traverseStructure($iterator -> getChildren(), $needle);          
+                  $this->mask($iterator -> getChildren(), $needle);          
               }
               else {
                   if (stripos($iterator -> key(), $needle) !== false ) {

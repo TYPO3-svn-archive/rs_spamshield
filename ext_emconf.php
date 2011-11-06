@@ -3,7 +3,7 @@
 ########################################################################
 # Extension Manager/Repository config file for ext "spamshield".
 #
-# Auto generated 05-11-2011 22:35
+# Auto generated 06-11-2011 18:15
 #
 # Manual updates:
 # Only the data in the array - everything else is removed by next
@@ -15,7 +15,7 @@ $EM_CONF[$_EXTKEY] = array(
 	'description' => 'Universal invisible Spamshield for TYPO3',
 	'category' => 'fe',
 	'shy' => 0,
-	'version' => '1.0.4',
+	'version' => '1.0.5',
 	'dependencies' => '',
 	'conflicts' => '',
 	'priority' => '',
@@ -43,7 +43,7 @@ $EM_CONF[$_EXTKEY] = array(
 			'captcha' => '',
 		),
 	),
-	'_md5_values_when_last_written' => 'a:25:{s:36:"class.tx_spamshield_formmodifier.php";s:4:"0d84";s:35:"class.tx_spamshield_varanalyzer.php";s:4:"9251";s:16:"ext_autoload.php";s:4:"a2fe";s:21:"ext_conf_template.txt";s:4:"b153";s:12:"ext_icon.gif";s:4:"8a2a";s:17:"ext_localconf.php";s:4:"85ac";s:14:"ext_tables.php";s:4:"2a34";s:14:"ext_tables.sql";s:4:"e006";s:26:"icon_tx_spamshield_log.gif";s:4:"f140";s:13:"locallang.xml";s:4:"7523";s:17:"locallang_csh.xml";s:4:"26ce";s:16:"locallang_db.xml";s:4:"b6b2";s:9:"style.css";s:4:"cdca";s:7:"tca.php";s:4:"e10e";s:14:"doc/manual.sxw";s:4:"5182";s:14:"pi1/ce_wiz.gif";s:4:"02b6";s:31:"pi1/class.tx_spamshield_pi1.php";s:4:"8f0f";s:39:"pi1/class.tx_spamshield_pi1_wizicon.php";s:4:"31de";s:13:"pi1/clear.gif";s:4:"cc11";s:17:"pi1/locallang.xml";s:4:"88e7";s:19:"res/sr_freecap.html";s:4:"72e0";s:20:"static/constants.txt";s:4:"d41d";s:16:"static/setup.txt";s:4:"1d1f";s:40:"tasks/class.tx_spamshield_logcleaner.php";s:4:"b7a7";s:57:"tasks/class.tx_spamshield_logcleaner_additionalfields.php";s:4:"a448";}',
+	'_md5_values_when_last_written' => 'a:20:{s:36:"class.tx_spamshield_formmodifier.php";s:4:"33dd";s:35:"class.tx_spamshield_varanalyzer.php";s:4:"6e32";s:16:"ext_autoload.php";s:4:"b50b";s:21:"ext_conf_template.txt";s:4:"136d";s:12:"ext_icon.gif";s:4:"8a2a";s:17:"ext_localconf.php";s:4:"fe41";s:14:"ext_tables.php";s:4:"95d9";s:14:"ext_tables.sql";s:4:"e006";s:26:"icon_tx_spamshield_log.gif";s:4:"f140";s:13:"locallang.xml";s:4:"a986";s:17:"locallang_csh.xml";s:4:"44b9";s:16:"locallang_db.xml";s:4:"4a13";s:9:"style.css";s:4:"414e";s:7:"tca.php";s:4:"c960";s:14:"doc/manual.sxw";s:4:"5182";s:19:"res/sr_freecap.html";s:4:"d1e0";s:20:"static/constants.txt";s:4:"d41d";s:16:"static/setup.txt";s:4:"3cf6";s:40:"tasks/class.tx_spamshield_logcleaner.php";s:4:"02c0";s:57:"tasks/class.tx_spamshield_logcleaner_additionalfields.php";s:4:"23d8";}',
 	'suggests' => array(
 	),
 );

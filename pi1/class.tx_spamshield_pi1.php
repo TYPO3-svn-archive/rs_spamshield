@@ -64,7 +64,7 @@ class tx_spamshield_pi1 extends tslib_pibase {
 			$content = '<div class="message red">'.htmlspecialchars($this->pi_getLL('message.wronglink')).'</div>';
 		}
 		else {
-			$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery('*', 'tx_spamshield_log', 'uid='.$this->GETparams['uid'].' AND deleted=0 AND solved=0');
+			$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery('*', 'tx_spamshield_log', 'uid='.intval($this->GETparams['uid']).' AND deleted=0 AND solved=0');
 			if (!$GLOBALS['TYPO3_DB']->sql_num_rows($res)) { # no UID
 				$content = '<div class="message red">'.htmlspecialchars($this->pi_getLL('message.wronguid')).'</div>';
 			}
